@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: webhook-cert-setup
+  namespace: webhook
+spec:
+  template:
+    spec:
+      serviceAccountName: webhook-cert-sa
+      containers:
+        - name: webhook-cert-setup
+          image: ealebed/certificator:latest
+          args:
+            - "--service"
+            - "webhook-svc"
+            - "--namespace"
+            - "webhook"
+            - "--secret"
+            - "webhook-certs"
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+  backoffLimit: 0
