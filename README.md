@@ -4,6 +4,8 @@ Tool for creating K8S Secret (with TLS type) which contains private key and sign
 ### Description
 Generate a certificate suitable for use with a admission webhook services.
 
+**NOTE:** This tool was initially created for usage with admission webhook service described [here](https://github.com/ealebed/token-injector).
+
 This cli tool uses k8s' CertificateSigningRequest API to generate a certificate signed by k8s CA suitable for use with sidecar-injector webhook services. This requires permissions to create and approve CSR. See [Kubernetes TLS management](https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster/) for detailed explanation and additional instructions.
 
 ### Understanding the problem 
@@ -14,3 +16,5 @@ There are many alternative ways to do that like creating a scripts that create C
 ### Solution 
 Then if we create a cli tool that helps us to create CSR with a client certificate which is approved by this CSR with CA which is belongs to Kubernetes cluster itself and then creating a Kubernetes Secret which includes private key and a client certificate, then we will have successfully completed the process by calling this cli tool in Kubernetes Job.
 
+## TODO:
+- Add CICD for building container images
