@@ -121,7 +121,6 @@ func createAndSignCert(service, namespace, secret, kubeconfig string) error {
 
 func createCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Context,
 	csr *certv1.CertificateSigningRequest, csrNameWithServiceAndNamespace string) error {
-
 	log.Println("Certificate signing request, status: Check if already exists")
 	csExistInCluster, _ := csrClient.Get(ctx, csrNameWithServiceAndNamespace, metav1.GetOptions{})
 	if csExistInCluster.Status.Certificate != nil {
