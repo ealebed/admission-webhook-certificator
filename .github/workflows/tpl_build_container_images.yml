@@ -22,14 +22,6 @@ jobs:
             echo "INPUT_BRANCH=master" >> $GITHUB_ENV
           fi
 
-      - name: 'Check input'
-        run: |
-          if ${{ inputs.branch }} != ""; then
-            echo "INPUT_BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
-          else
-            echo "INPUT_BRANCH=master" >> $GITHUB_ENV
-          fi
-
       - name: 'Decide on tag'
         id: tagger
         run: |
