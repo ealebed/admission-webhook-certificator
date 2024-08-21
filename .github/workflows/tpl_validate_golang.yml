@@ -1,0 +1,26 @@
+name: 'Template:Validate GOLANG codebase'
+
+on:
+  workflow_call:
+
+jobs:
+  validate:
+    name: 'Validate golang layer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      - name: 'Install Golang'
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+          cache: false
+
+      - name: 'golangci lint'
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.60.2
+          args: --timeout 4m --config .golangci.yaml

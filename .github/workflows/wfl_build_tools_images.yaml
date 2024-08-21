@@ -1,0 +1,23 @@
+name: 'Container image CI'
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        default: master
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/tpl_ci_golang_tools.yml
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/heads/main') || github.event.pull_request.base.ref == 'main' }}
+    secrets: inherit
