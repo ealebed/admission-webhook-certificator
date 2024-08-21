@@ -17,7 +17,7 @@ jobs:
       - name: 'Decide on tag'
         id: tagger
         run: |
-          tag=$(echo "${{ inputs.branch }}" | sed -e 's/^refs\/heads\///g' -e 's/^refs\/tags\///g' -e 's/^refs\/pull\///g' -e 's/\/merge$//g' | sed -e 's/main/latest/g' | sed -e 's/\//-/g')
+          tag=$(echo "${{ inputs.branch }}" | sed -e 's/^refs\/heads\///g' -e 's/^refs\/tags\///g' -e 's/^refs\/pull\///g' -e 's/\/merge$//g' | sed -e 's/master/latest/g' | sed -e 's/\//-/g')
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
       - name: 'Login to Docker Hub'
