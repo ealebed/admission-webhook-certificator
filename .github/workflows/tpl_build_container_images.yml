@@ -14,10 +14,18 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
+      - name: 'Check input'
+        run: |
+          if ${{ inputs.branch }} != ""; then
+            echo "INPUT_BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+          else
+            echo "INPUT_BRANCH=master" >> $GITHUB_ENV
+          fi
+
       - name: 'Decide on tag'
         id: tagger
         run: |
-          tag=$(echo "${{ inputs.branch }}" | sed -e 's/^refs\/heads\///g' -e 's/^refs\/tags\///g' -e 's/^refs\/pull\///g' -e 's/\/merge$//g' | sed -e 's/master/latest/g' | sed -e 's/\//-/g')
+          tag=$(echo "${{ env.INPUT_BRANCH }}" | sed -e 's/^refs\/heads\///g' -e 's/^refs\/tags\///g' -e 's/^refs\/pull\///g' -e 's/\/merge$//g' | sed -e 's/master/latest/g' | sed -e 's/\//-/g')
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
       - name: 'Login to Docker Hub'
