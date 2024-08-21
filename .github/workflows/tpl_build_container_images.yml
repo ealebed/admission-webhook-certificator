@@ -12,12 +12,12 @@ jobs:
       - name: 'Checkout code'
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.event.inputs.branch }}
 
       - name: 'Check input'
         run: |
-          if ${{ inputs.branch }} != ""; then
-            echo "INPUT_BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+          if "${{ github.event.inputs.branch != '' }}"; then
+            echo "INPUT_BRANCH=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
           else
             echo "INPUT_BRANCH=master" >> $GITHUB_ENV
           fi
