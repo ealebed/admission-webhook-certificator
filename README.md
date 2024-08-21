@@ -17,6 +17,3 @@ There are many alternative ways to do that like creating a scripts that create C
 ### Solution 
 This cli tool helps to create CSR (CertificateSigningRequest) with a client certificate which is approved by this CSR with CA which is belongs to Kubernetes cluster itself and then creating a Kubernetes Secret which includes private key and a client certificate.
 The whole process could be completed by calling this cli tool in Kubernetes Job.
-
-## TODO:
-- Add CICD for building container images
