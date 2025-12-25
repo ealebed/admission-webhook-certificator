@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   # Timeout for analysis, e.g. 30s, 5m.
   # Default: 1m
@@ -75,7 +77,6 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - gofmt
     - goimports
     - gosec
     - gosimple
@@ -86,7 +87,6 @@ linters:
     - nakedret
     - staticcheck
     - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
