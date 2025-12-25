@@ -1,12 +1,12 @@
 module github.com/ealebed/admission-webhook-certificator
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/spf13/cobra v1.10.2
-	k8s.io/api v0.34.3
-	k8s.io/apimachinery v0.34.3
-	k8s.io/client-go v0.34.3
+	k8s.io/api v0.35.0
+	k8s.io/apimachinery v0.35.0
+	k8s.io/client-go v0.35.0
 )
 
 require (

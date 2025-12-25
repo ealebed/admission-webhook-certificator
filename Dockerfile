@@ -2,11 +2,11 @@
 #
 # ----- Go Builder Image ------
 #
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # curl git bash
 RUN apk add --no-cache curl git bash make
-COPY --from=golangci/golangci-lint:v1.64-alpine /usr/bin/golangci-lint /usr/bin
+COPY --from=golangci/golangci-lint:latest-alpine /usr/bin/golangci-lint /usr/bin
 #
 # ----- Build and Test Image -----
 #
