@@ -23,4 +23,4 @@ jobs:
         uses: golangci/golangci-lint-action@v7
         with:
           version: latest
-          args: --timeout 4m --config .golangci.yaml --out-format=colored-line-number
+          args: --timeout 4m --config .golangci.yaml
