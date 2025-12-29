@@ -1,4 +1,4 @@
-version: "2"
+version: 2
 
 run:
   # Timeout for analysis, e.g. 30s, 5m.
@@ -63,6 +63,11 @@ linters-settings:
           - k8s.io/client-go/tools/clientcmd
           - github.com/spf13/cobra
 
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
@@ -77,16 +82,13 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - lll
     - misspell
     - nakedret
     - staticcheck
-    - stylecheck
     - unconvert
     - unparam
     - unused
