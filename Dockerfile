@@ -29,7 +29,7 @@ RUN make
 #
 # ------ get latest CA certificates
 #
-FROM alpine:3.20 as certs
+FROM alpine:3.23 as certs
 RUN apk --update add ca-certificates
 # this is for debug only Alpine image
 COPY --from=build /go/src/certificator/.bin/github.com/ealebed/admission-webhook-certificator /certificator
