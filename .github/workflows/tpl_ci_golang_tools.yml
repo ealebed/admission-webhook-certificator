@@ -11,10 +11,10 @@ permissions:
 jobs:
   validate:
     if: github.event_name == 'pull_request'
-    uses: .github/workflows/tpl_validate_golang.yml
+    uses: ./.github/workflows/tpl_validate_golang.yml
     secrets: inherit
 
   build-push-image:
     if: github.event_name != 'pull_request'
-    uses: .github/workflows/tpl_build_container_images.yml
+    uses: ./.github/workflows/tpl_build_container_images.yml
     secrets: inherit

@@ -19,6 +19,6 @@ permissions:
 
 jobs:
   ci:
-    uses: .github/workflows/tpl_ci_golang_tools.yml
+    uses: ./.github/workflows/tpl_ci_golang_tools.yml
     if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/heads/master') || github.event.pull_request.base.ref == 'master' }}
     secrets: inherit
