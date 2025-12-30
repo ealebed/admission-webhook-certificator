@@ -5,12 +5,8 @@ run:
   issues-exit-code: 2
   tests: false
 
-formatters:
-  enable:
-    - gofmt
-    - goimports
-
 linters:
+  default: none
   enable:
     - bodyclose
     - depguard
@@ -32,3 +28,68 @@ linters:
     - unparam
     - unused
     - whitespace
+  settings:
+    depguard:
+      rules:
+        main:
+          files:
+            - $all
+            - "!$test"
+          allow:
+            - $gostd
+            - "github.com/ealebed/admission-webhook-certificator/cmd"
+            - "github.com/ealebed/admission-webhook-certificator/cmd/version"
+            - "k8s.io/api/certificates/v1"
+            - "k8s.io/api/core/v1"
+            - "k8s.io/apimachinery/pkg/apis/meta/v1"
+            - "k8s.io/client-go/kubernetes"
+            - "k8s.io/client-go/rest"
+            - "k8s.io/client-go/tools/clientcmd"
+            - "k8s.io/client-go/kubernetes/typed/certificates/v1"
+            - "github.com/spf13/cobra"
+    govet:
+      enable:
+        - nilness
+        - shadow
+    gocyclo:
+      min-complexity: 15
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    misspell:
+      locale: US
+    lll:
+      line-length: 160
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport # https://github.com/go-critic/go-critic/issues/845
+        - ifElseChain
+        - octalLiteral
+        - rangeValCopy
+        - unnamedResult
+        - whyNoLint
+        - wrapperFunc
+    funlen:
+      lines: -1
+      statements: 50
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes: 
+        - github.com/ealebed/admission-webhook-certificator
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
