@@ -1,111 +1,115 @@
+version: "2"
+
 run:
-  # Timeout for analysis, e.g. 30s, 5m.
-  # Default: 1m
   timeout: 5m
-  # Exit code when at least one issue was found.
-  # Default: 1
   issues-exit-code: 2
-  # Include test files or not.
-  # Default: true
   tests: false
 
-linters-settings:
-  govet:
-    enable:
-      - nilness
-      - shadow
-  gocyclo:
-    min-complexity: 15
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-  misspell:
-    locale: US
-  lll:
-    line-length: 160
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - rangeValCopy
-      - unnamedResult
-      - whyNoLint
-      - wrapperFunc
-  funlen:
-    lines: -1
-    statements: 50
-  depguard:
-    rules:
-      main:
-        files:
-          - $all          
-        allow:
-          - $gostd
-          - github.com/ealebed/admission-webhook-certificator/cmd
-          - k8s.io/api/certificates/v1
-          - k8s.io/api/core/v1
-          - k8s.io/apimachinery/pkg/apis/meta/v1
-          - k8s.io/client-go/kubernetes
-          - k8s.io/client-go/kubernetes
-          - k8s.io/client-go/rest
-          - k8s.io/client-go/tools/clientcmd
-          - github.com/spf13/cobra
-
 linters:
-  # please, do not use `enable-all`: it's deprecated and will be removed soon.
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - depguard
     - dogsled
     - dupl
     - errcheck
+    - importas
     - funlen
     - goconst
     - gocritic
     - gocyclo
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - lll
     - misspell
     - nakedret
+    - nolintlint
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
+  settings:
+    depguard:
+      rules:
+        main:
+          files:
+            - $all
+            - "!$test"
+          allow:
+            - $gostd
+            - "github.com/ealebed/admission-webhook-certificator/cmd"
+            - "github.com/ealebed/admission-webhook-certificator/cmd/version"
+            - "k8s.io/api/certificates/v1"
+            - "k8s.io/api/core/v1"
+            - "k8s.io/apimachinery/pkg/apis/meta/v1"
+            - "k8s.io/client-go/kubernetes"
+            - "k8s.io/client-go/rest"
+            - "k8s.io/client-go/tools/clientcmd"
+            - "k8s.io/client-go/kubernetes/typed/certificates/v1"
+            - "github.com/spf13/cobra"
+    govet:
+      enable:
+        - nilness
+        - shadow
+    gocyclo:
+      min-complexity: 15
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    misspell:
+      locale: US
+    importas:
+      alias:
+        - pkg: k8s.io/api/certificates/v1
+          alias: certv1
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/client-go/kubernetes
+          alias: kubernetes
+        - pkg: k8s.io/client-go/rest
+          alias: rest
+        - pkg: k8s.io/client-go/tools/clientcmd
+          alias: clientcmd
+        - pkg: k8s.io/client-go/kubernetes/typed/certificates/v1
+          alias: certsv1
+        - pkg: github.com/spf13/cobra
+          alias: cobra
+    lll:
+      line-length: 160
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport # https://github.com/go-critic/go-critic/issues/845
+        - ifElseChain
+        - octalLiteral
+        - rangeValCopy
+        - unnamedResult
+        - whyNoLint
+        - wrapperFunc
+    funlen:
+      lines: -1
+      statements: 50
 
-  # don't enable:
-  # - gochecknoglobals
-  # - gocognit
-  # - godox
-  # - maligned
-  # - prealloc
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes: 
+        - github.com/ealebed/admission-webhook-certificator
 
 issues:
-  exclude:
-    - Using the variable on range scope `tt` in function literal
-  exclude-rules:
-    - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
-      linters: [ govet ]
-  # which dirs to skip
-  exclude-dirs:
-    - mocks
+  max-issues-per-linter: 0
+  max-same-issues: 0

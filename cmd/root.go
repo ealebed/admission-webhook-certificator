@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ealebed/admission-webhook-certificator/cmd/version"
 	"github.com/spf13/cobra"
+
+	"github.com/ealebed/admission-webhook-certificator/cmd/version"
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately
@@ -57,9 +58,11 @@ func NewCreateAndSignCertCmd() *cobra.Command {
 	options := CreateAndSignCertOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "certify",
-		Short:   "Create K8S Secret with TLS type which includes private key and corresponding client certificates signed by K8S CA.",
-		Long:    "This tool generates a certificate for usage with a admission webhook service.\nCertificate is signed by k8s CA using CertificateSigningRequest API",
+		Use: "certify",
+		Short: "Create K8S Secret with TLS type which includes private key and " +
+			"corresponding client certificates signed by K8S CA.",
+		Long: "This tool generates a certificate for usage with a admission webhook service.\n" +
+			"Certificate is signed by k8s CA using CertificateSigningRequest API",
 		Example: "certify [--service=webhook-svc --namespace=webhook --secret=webhook-certs]",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return createAndSignCert(options.service, options.namespace, options.secret, options.kubeconfig)
@@ -67,8 +70,10 @@ func NewCreateAndSignCertCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&options.service, "service", "s", "", "Webhook service name.")
-	cmd.Flags().StringVarP(&options.namespace, "namespace", "n", "webhook", "Namespace where webhook service and secret reside.")
-	cmd.Flags().StringVarP(&options.secret, "secret", "t", "webhook-certs", "Secret name for CA certificate and server certificate/key pair.")
+	cmd.Flags().StringVarP(&options.namespace, "namespace", "n", "webhook",
+		"Namespace where webhook service and secret reside.")
+	cmd.Flags().StringVarP(&options.secret, "secret", "t", "webhook-certs",
+		"Secret name for CA certificate and server certificate/key pair.")
 	cmd.Flags().StringVarP(&options.kubeconfig, "kubeconfig", "k", "", "kubeconfig path")
 
 	if err := cmd.MarkFlagRequired("service"); err != nil {
