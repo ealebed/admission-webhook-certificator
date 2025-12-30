@@ -90,6 +90,56 @@ func TestGenerateCertificateRequest(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:      "long service and namespace names",
+			service:   "very-long-service-name-with-many-characters",
+			namespace: "very-long-namespace-name-with-many-characters",
+			wantErr:   false,
+			validate: func(t *testing.T, csrPEM, keyPEM *bytes.Buffer, csrName string) {
+				expectedName := "very-long-service-name-with-many-characters.very-long-namespace-name-with-many-characters"
+				if csrName != expectedName {
+					t.Errorf("Expected CSR name '%s', got '%s'", expectedName, csrName)
+				}
+				// Verify CSR still has valid structure
+				block, _ := pem.Decode(csrPEM.Bytes())
+				if block == nil {
+					t.Error("Failed to decode CSR PEM for long names")
+				}
+			},
+		},
+		{
+			name:      "service with underscores",
+			service:   "webhook_svc",
+			namespace: "default",
+			wantErr:   false,
+			validate: func(t *testing.T, csrPEM, keyPEM *bytes.Buffer, csrName string) {
+				if csrName != "webhook_svc.default" {
+					t.Errorf("Expected CSR name 'webhook_svc.default', got '%s'", csrName)
+				}
+			},
+		},
+		{
+			name:      "namespace with underscores",
+			service:   "webhook-svc",
+			namespace: "kube_system",
+			wantErr:   false,
+			validate: func(t *testing.T, csrPEM, keyPEM *bytes.Buffer, csrName string) {
+				if csrName != "webhook-svc.kube_system" {
+					t.Errorf("Expected CSR name 'webhook-svc.kube_system', got '%s'", csrName)
+				}
+			},
+		},
+		{
+			name:      "single character service name",
+			service:   "a",
+			namespace: "b",
+			wantErr:   false,
+			validate: func(t *testing.T, csrPEM, keyPEM *bytes.Buffer, csrName string) {
+				if csrName != "a.b" {
+					t.Errorf("Expected CSR name 'a.b', got '%s'", csrName)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -172,6 +222,31 @@ func TestCreateCSRObject(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:    "CSR with empty buffer",
+			csrName: "test-service.default",
+			csrPEM:  bytes.NewBufferString(""),
+			wantErr: false,
+			validate: func(t *testing.T, csr *certv1.CertificateSigningRequest) {
+				if csr == nil {
+					t.Fatal("CSR object should not be nil even with empty buffer")
+				}
+				if len(csr.Spec.Request) != 0 {
+					t.Error("CSR request should be empty when buffer is empty")
+				}
+			},
+		},
+		{
+			name:    "CSR with long name",
+			csrName: "very-long-service-name.very-long-namespace-name",
+			csrPEM:  bytes.NewBufferString("test-csr-data"),
+			wantErr: false,
+			validate: func(t *testing.T, csr *certv1.CertificateSigningRequest) {
+				if csr.Name != "very-long-service-name.very-long-namespace-name" {
+					t.Errorf("Expected CSR name 'very-long-service-name.very-long-namespace-name', got '%s'", csr.Name)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -183,6 +258,33 @@ func TestCreateCSRObject(t *testing.T) {
 			}
 			if !tt.wantErr && tt.validate != nil {
 				tt.validate(t, csr)
+			}
+		})
+	}
+}
+
+func TestInitOutOfClusterClient(t *testing.T) {
+	tests := []struct {
+		name       string
+		kubeconfig string
+		wantErr    bool
+	}{
+		{
+			name:       "non-existent kubeconfig file",
+			kubeconfig: "/nonexistent/path/to/kubeconfig",
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := initOutOfClusterClient(tt.kubeconfig)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("initOutOfClusterClient() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && config == nil {
+				t.Error("initOutOfClusterClient() returned nil config, expected valid config")
 			}
 		})
 	}
