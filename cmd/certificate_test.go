@@ -108,11 +108,11 @@ func TestGenerateCertificateRequest(t *testing.T) {
 
 func TestCreateCSRObject(t *testing.T) {
 	tests := []struct {
-		name      string
-		csrName   string
-		csrPEM    *bytes.Buffer
-		wantErr   bool
-		validate  func(t *testing.T, csr *certv1.CertificateSigningRequest)
+		name     string
+		csrName  string
+		csrPEM   *bytes.Buffer
+		wantErr  bool
+		validate func(t *testing.T, csr *certv1.CertificateSigningRequest)
 	}{
 		{
 			name:    "valid CSR object",
@@ -187,4 +187,3 @@ func TestCreateCSRObject(t *testing.T) {
 		})
 	}
 }
-
