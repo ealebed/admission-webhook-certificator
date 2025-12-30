@@ -32,7 +32,7 @@ import (
 	certv1 "k8s.io/api/certificates/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/certificates/v1"
+	certsv1 "k8s.io/client-go/kubernetes/typed/certificates/v1"
 )
 
 const (
@@ -47,60 +47,20 @@ func createAndSignCert(service, namespace, secret, kubeconfig string) error {
 	ctx := context.TODO()
 	cs, _ := initK8sClient(kubeconfig)
 
-	r := strings.NewReplacer("${service}", service, "${namespace}", namespace)
-
-	clientPrivateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	clientCSRPEM, clientPrivateKeyPEM, csrNameWithServiceAndNamespace, err :=
+		generateCertificateRequest(service, namespace)
 	if err != nil {
-		log.Fatalf("rsa.GenerateKey - error occurred, detail: %v", err)
+		return err
 	}
-
-	csrNameWithService := r.Replace(csrNameTemplate0)
-	csrNameWithServiceAndNamespace := r.Replace(csrNameTemplate1)
-	csrNameFull := r.Replace(csrNameTemplate2)
-
-	template := x509.CertificateRequest{
-		Subject: pkix.Name{
-			CommonName: csrNameWithServiceAndNamespace,
-		},
-		DNSNames: []string{csrNameWithService, csrNameWithServiceAndNamespace, csrNameFull},
-	}
-
-	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, clientPrivateKey)
-	if err != nil {
-		log.Fatalf("x509.CreateCertificateRequest - error occurred, detail: %v", err)
-	}
-
-	clientCSRPEM := new(bytes.Buffer)
-	_ = pem.Encode(clientCSRPEM, &pem.Block{
-		Type:  "CERTIFICATE REQUEST",
-		Bytes: csrBytes,
-	})
-
-	clientPrivateKeyPEM := new(bytes.Buffer)
-	_ = pem.Encode(clientPrivateKeyPEM, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(clientPrivateKey),
-	})
 
 	csrClient := cs.CertificatesV1().CertificateSigningRequests()
+	csr := createCSRObject(csrNameWithServiceAndNamespace, clientCSRPEM)
 
-	csr := &certv1.CertificateSigningRequest{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: csrNameWithServiceAndNamespace,
-		},
-		Spec: certv1.CertificateSigningRequestSpec{
-			Request:    clientCSRPEM.Bytes(),
-			Usages:     []certv1.KeyUsage{certv1.UsageDigitalSignature, certv1.UsageKeyEncipherment, certv1.UsageServerAuth},
-			Groups:     []string{"system:authenticated"},
-			SignerName: "kubernetes.io/kube-apiserver-client",
-		},
-	}
-
-	if err := createCSR(csrClient, ctx, csr, csrNameWithServiceAndNamespace); err != nil {
+	if err = createCSR(csrClient, ctx, csr, csrNameWithServiceAndNamespace); err != nil {
 		log.Fatalf("Create CertificateSigningRequest - error occurred, detail: %v", err)
 	}
 
-	if err := approveCSR(csrClient, ctx, csr); err != nil {
+	if err = approveCSR(csrClient, ctx, csr); err != nil {
 		log.Fatalf("Approve CertificateSigningRequest - error occurred, detail: %v", err)
 	}
 
@@ -119,7 +79,66 @@ func createAndSignCert(service, namespace, secret, kubeconfig string) error {
 	return nil
 }
 
-func createCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Context,
+func generateCertificateRequest(service, namespace string) (
+	*bytes.Buffer, *bytes.Buffer, string, error,
+) {
+	r := strings.NewReplacer("${service}", service, "${namespace}", namespace)
+
+	clientPrivateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, nil, "", fmt.Errorf("rsa.GenerateKey: %w", err)
+	}
+
+	csrNameWithService := r.Replace(csrNameTemplate0)
+	csrNameWithServiceAndNamespace := r.Replace(csrNameTemplate1)
+	csrNameFull := r.Replace(csrNameTemplate2)
+
+	template := x509.CertificateRequest{
+		Subject: pkix.Name{
+			CommonName: csrNameWithServiceAndNamespace,
+		},
+		DNSNames: []string{csrNameWithService, csrNameWithServiceAndNamespace, csrNameFull},
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, clientPrivateKey)
+	if err != nil {
+		return nil, nil, "", fmt.Errorf("x509.CreateCertificateRequest: %w", err)
+	}
+
+	clientCSRPEM := new(bytes.Buffer)
+	_ = pem.Encode(clientCSRPEM, &pem.Block{
+		Type:  "CERTIFICATE REQUEST",
+		Bytes: csrBytes,
+	})
+
+	clientPrivateKeyPEM := new(bytes.Buffer)
+	_ = pem.Encode(clientPrivateKeyPEM, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(clientPrivateKey),
+	})
+
+	return clientCSRPEM, clientPrivateKeyPEM, csrNameWithServiceAndNamespace, nil
+}
+
+func createCSRObject(csrName string, clientCSRPEM *bytes.Buffer) *certv1.CertificateSigningRequest {
+	return &certv1.CertificateSigningRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: csrName,
+		},
+		Spec: certv1.CertificateSigningRequestSpec{
+			Request: clientCSRPEM.Bytes(),
+			Usages: []certv1.KeyUsage{
+				certv1.UsageDigitalSignature,
+				certv1.UsageKeyEncipherment,
+				certv1.UsageServerAuth,
+			},
+			Groups:     []string{"system:authenticated"},
+			SignerName: "kubernetes.io/kube-apiserver-client",
+		},
+	}
+}
+
+func createCSR(csrClient certsv1.CertificateSigningRequestInterface, ctx context.Context,
 	csr *certv1.CertificateSigningRequest, csrNameWithServiceAndNamespace string) error {
 	log.Println("Certificate signing request, status: Check if already exists")
 	csExistInCluster, _ := csrClient.Get(ctx, csrNameWithServiceAndNamespace, metav1.GetOptions{})
@@ -142,7 +161,7 @@ func createCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Cont
 	return nil
 }
 
-func approveCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Context,
+func approveCSR(csrClient certsv1.CertificateSigningRequestInterface, ctx context.Context,
 	csr *certv1.CertificateSigningRequest) error {
 	log.Println("Certificate signing request, status: Approving")
 
@@ -163,7 +182,7 @@ func approveCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Con
 	return nil
 }
 
-func retrieveUpdatedCSR(csrClient v1.CertificateSigningRequestInterface, ctx context.Context,
+func retrieveUpdatedCSR(csrClient certsv1.CertificateSigningRequestInterface, ctx context.Context,
 	csrNameWithServiceAndNamespace string) (*certv1.CertificateSigningRequest, error) {
 	log.Println("Certificate signing request, status: Retrieving updated CSR")
 

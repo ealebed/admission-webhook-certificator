@@ -26,7 +26,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func createOrUpdateSecret(cs *kubernetes.Clientset, ctx context.Context, clientCert []byte, clientPrivateKeyPEM *bytes.Buffer, namespace, secret string) error {
+func createOrUpdateSecret(
+	cs *kubernetes.Clientset,
+	ctx context.Context,
+	clientCert []byte,
+	clientPrivateKeyPEM *bytes.Buffer,
+	namespace, secret string,
+) error {
 	tlsSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: secret,
