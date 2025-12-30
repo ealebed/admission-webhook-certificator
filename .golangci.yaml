@@ -107,7 +107,7 @@ formatters:
     - goimports
   settings:
     goimports:
-      local-prefixes: 
+      local-prefixes:
         - github.com/ealebed/admission-webhook-certificator
 
 issues:
