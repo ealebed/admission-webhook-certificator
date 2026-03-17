@@ -1,6 +1,6 @@
 module github.com/ealebed/admission-webhook-certificator
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/spf13/cobra v1.10.2
