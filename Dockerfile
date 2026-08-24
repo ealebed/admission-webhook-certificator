@@ -2,7 +2,7 @@
 #
 # ----- Go Builder Image ------
 #
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 # curl git bash
 RUN apk add --no-cache curl git bash make
