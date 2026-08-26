@@ -2,15 +2,15 @@
 #
 # ----- Go Builder Image ------
 #
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 # curl git bash
 RUN apk add --no-cache curl git bash make
-COPY --from=golangci/golangci-lint:latest-alpine /usr/bin/golangci-lint /usr/bin
+COPY --from=golangci/golangci-lint:v2.13.1-alpine /usr/bin/golangci-lint /usr/bin
 #
 # ----- Build and Test Image -----
 #
-FROM builder as build
+FROM builder AS build
 
 # set working directorydoc
 RUN mkdir -p /go/src/certificator
@@ -29,7 +29,7 @@ RUN make
 #
 # ------ get latest CA certificates
 #
-FROM alpine:3.24 as certs
+FROM alpine:3.24 AS certs
 RUN apk --update add ca-certificates
 # this is for debug only Alpine image
 COPY --from=build /go/src/certificator/.bin/github.com/ealebed/admission-webhook-certificator /certificator
