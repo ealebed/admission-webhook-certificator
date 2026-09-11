@@ -67,3 +67,6 @@ The pre-commit hooks will automatically:
 - Run `go mod tidy` to ensure dependencies are clean
 - Run tests with race detector
 - Check for common issues (trailing whitespace, large files, merge conflicts, etc.)
+
+## Dependabot automation
+Minor and patch Dependabot PRs are approved and squash-merged by a GitHub App after required CI passes. See [Dependabot automation](./docs/dependabot-automation.md).
